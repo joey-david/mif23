@@ -13,13 +13,20 @@ public :
     Image() : im(nullptr), width(0), height(0) {}
     Image(int w, int h) : width(w), height(h)
     {
-        try{im=new Pixel[w*h];}
-            catch(std::bad_alloc& ba){std::cout << "bad_alloc caught: " << ba.what() << '\n';}
+        try{
+            if (dynamic_cast<GrayscalePixel*>(im))
+                im= new GrayscalePixel(*dynamic_cast<GrayscalePixel*>(im));
+            else
+                im= new ColoredPixel(*dynamic_cast<ColoredPixel*>(im));}
+        catch(std::bad_alloc& ba){std::cout << "bad_alloc caught: " << ba.what() << '\n';}
     }
 
     Image(const Image& oldIm) : width(oldIm.width), height(oldIm.height) {
-        try {
-            im = new Pixel[width*height];
+        try{
+            if (dynamic_cast<GrayscalePixel*>(im))
+                im= new GrayscalePixel(*dynamic_cast<GrayscalePixel*>(im));
+            else
+                im= new ColoredPixel(*dynamic_cast<ColoredPixel*>(im));}
             std::copy(oldIm.im, oldIm.im + width * height, im);
         } catch(std::bad_alloc& ba) {
             im = nullptr;
@@ -59,7 +66,14 @@ public :
     Image2() : im(nullptr), width(0), height(0) {}
     Image2(unsigned int w,unsigned int h) : width(w), height(h)
     {
-        try {im=new Pixel*[w*h]; for(unsigned int i=0; i<w*h ; i++) im[i]= new Pixel();}
+        try {im=new Pixel*[w*h];
+            for(unsigned int i=0; i<w*h ; i++) {
+                if (dynamic_cast<GrayscalePixel*>(im[i]))
+                    im[i]= new GrayscalePixel(*dynamic_cast<GrayscalePixel*>(im[i]));
+                else
+                    im[i]= new ColoredPixel(*dynamic_cast<ColoredPixel*>(im[i]));
+            }
+        }
         catch(std::bad_alloc& ba){std::cout << "bad_alloc caught: " << ba.what() << '\n';}
     }
 
@@ -67,7 +81,10 @@ public :
         try {
             im = new Pixel*[width*height];
             for (unsigned int i = 0; i < width * height; i++)
-                im[i] = new Pixel();
+                if (dynamic_cast<GrayscalePixel*>(im[i]))
+                    im[i]= new GrayscalePixel(*dynamic_cast<GrayscalePixel*>(im[i]));
+                else
+                    im[i]= new ColoredPixel(*dynamic_cast<ColoredPixel*>(im[i]));
         } catch(std::bad_alloc &ba) {
             im = nullptr;
             width = height = 0;
